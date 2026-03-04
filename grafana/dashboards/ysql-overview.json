@@ -14,7 +14,7 @@
         "includeAll": true,
         "allValue": ".*",
         "multi": true,
-        "query": "label_values(yb_statements_latency_le_count, server)"
+        "query": "label_values(yb_statements_latency_le_count, universe)"
       },
       {
         "name": "node",
@@ -24,7 +24,7 @@
         "includeAll": true,
         "allValue": ".*",
         "multi": true,
-        "query": "label_values(yb_statements_latency_le_count, server)"
+        "query": "label_values(yb_statements_latency_le_count{universe=~\"$universe\"}, server)"
       },
       {
         "name": "database",
@@ -91,27 +91,27 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
           "legendFormat": "p50"
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
           "legendFormat": "p95"
         },
         {
           "refId": "D",
-          "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
           "legendFormat": "p99"
         },
         {
           "refId": "E",
-          "expr": "avg(yb_statements_op_exec_avg_exec_ms{server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})",
+          "expr": "avg(yb_statements_op_exec_avg_exec_ms{universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"})",
           "legendFormat": "avg"
         },
         {
           "refId": "F",
-          "expr": "avg(handler_latency_yb_tserver_PgClientService_Perform{quantile=\"mean\"}) * 0.001",
+          "expr": "avg(handler_latency_yb_tserver_PgClientService_Perform{quantile=\"mean\",universe=~\"$universe\",server=~\"$node\"}) * 0.001",
           "legendFormat": "avg_yba"
         }
       ]
@@ -147,27 +147,27 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
           "legendFormat": "p50"
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
           "legendFormat": "p95"
         },
         {
           "refId": "D",
-          "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
           "legendFormat": "p99"
         },
         {
           "refId": "E",
-          "expr": "avg(yb_statements_op_exec_avg_exec_ms{server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})",
+          "expr": "avg(yb_statements_op_exec_avg_exec_ms{universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"})",
           "legendFormat": "avg"
         },
         {
           "refId": "F",
-          "expr": "avg(handler_latency_yb_tserver_PgClientService_Perform{quantile=\"mean\"}) * 0.001",
+          "expr": "avg(handler_latency_yb_tserver_PgClientService_Perform{quantile=\"mean\",universe=~\"$universe\",server=~\"$node\"}) * 0.001",
           "legendFormat": "avg_yba"
         }
       ]
@@ -201,10 +201,10 @@
         "overrides": []
       },
       "targets": [
-        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
-        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
-        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
-        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"SELECT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
       ]
     },
     {
@@ -218,10 +218,10 @@
         "overrides": []
       },
       "targets": [
-        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
-        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
-        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
-        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"INSERT\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
       ]
     },
     {
@@ -235,10 +235,10 @@
         "overrides": []
       },
       "targets": [
-        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
-        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
-        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
-        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"UPDATE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
       ]
     },
     {
@@ -252,10 +252,10 @@
         "overrides": []
       },
       "targets": [
-        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
-        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
-        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
-        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"DELETE\",universe=~\"$universe\",server=~\"$node\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
       ]
     },
     {

@@ -3,25 +3,98 @@ global:
   evaluation_interval: 10s
 
 scrape_configs:
-  - job_name: "yugabyte-tserver"
+  - job_name: "postgres-exporter-yb-azure-uats"
+    static_configs:
+      - targets:
+          - "AZ_UATS_NODE1:9187"
+          - "AZ_UATS_NODE2:9187"
+          - "AZ_UATS_NODE3:9187"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-azure-uats"
+
+  - job_name: "postgres-exporter-yb-sql-x-central-uat"
+    static_configs:
+      - targets:
+          - "X_CENTRAL_NODE1:9187"
+          - "X_CENTRAL_NODE2:9187"
+          - "X_CENTRAL_NODE3:9187"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-sql-x-central-uat"
+
+  - job_name: "postgres-exporter-yb-sql-x-east-uat"
+    static_configs:
+      - targets:
+          - "X_EAST_NODE1:9187"
+          - "X_EAST_NODE2:9187"
+          - "X_EAST_NODE3:9187"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-sql-x-east-uat"
+
+  - job_name: "yugabyte-tserver-yb-azure-uats"
     metrics_path: "/prometheus-metrics"
     static_configs:
       - targets:
-          - "NODE1:9000"
-          - "NODE2:9000"
-          - "NODE3:9000"
+          - "AZ_UATS_NODE1:9000"
+          - "AZ_UATS_NODE2:9000"
+          - "AZ_UATS_NODE3:9000"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-azure-uats"
 
-  - job_name: "yugabyte-master"
+  - job_name: "yugabyte-tserver-yb-sql-x-central-uat"
     metrics_path: "/prometheus-metrics"
     static_configs:
       - targets:
-          - "NODE1:7000"
-          - "NODE2:7000"
-          - "NODE3:7000"
+          - "X_CENTRAL_NODE1:9000"
+          - "X_CENTRAL_NODE2:9000"
+          - "X_CENTRAL_NODE3:9000"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-sql-x-central-uat"
 
-  - job_name: "postgres-exporter"
+  - job_name: "yugabyte-tserver-yb-sql-x-east-uat"
+    metrics_path: "/prometheus-metrics"
     static_configs:
       - targets:
-          - "NODE1:9187"
-          - "NODE2:9187"
-          - "NODE3:9187"
+          - "X_EAST_NODE1:9000"
+          - "X_EAST_NODE2:9000"
+          - "X_EAST_NODE3:9000"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-sql-x-east-uat"
+
+  - job_name: "yugabyte-master-yb-azure-uats"
+    metrics_path: "/prometheus-metrics"
+    static_configs:
+      - targets:
+          - "AZ_UATS_NODE1:7000"
+          - "AZ_UATS_NODE2:7000"
+          - "AZ_UATS_NODE3:7000"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-azure-uats"
+
+  - job_name: "yugabyte-master-yb-sql-x-central-uat"
+    metrics_path: "/prometheus-metrics"
+    static_configs:
+      - targets:
+          - "X_CENTRAL_NODE1:7000"
+          - "X_CENTRAL_NODE2:7000"
+          - "X_CENTRAL_NODE3:7000"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-sql-x-central-uat"
+
+  - job_name: "yugabyte-master-yb-sql-x-east-uat"
+    metrics_path: "/prometheus-metrics"
+    static_configs:
+      - targets:
+          - "X_EAST_NODE1:7000"
+          - "X_EAST_NODE2:7000"
+          - "X_EAST_NODE3:7000"
+    relabel_configs:
+      - target_label: universe
+        replacement: "yb-sql-x-east-uat"

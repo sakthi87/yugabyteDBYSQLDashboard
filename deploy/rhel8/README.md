@@ -66,7 +66,9 @@ setup_prometheus.sh
 
 2) Edit `prometheus.yml` and replace:
 ```
-NODE1, NODE2, NODE3
+AZ_UATS_NODE1, AZ_UATS_NODE2, AZ_UATS_NODE3
+X_CENTRAL_NODE1, X_CENTRAL_NODE2, X_CENTRAL_NODE3
+X_EAST_NODE1, X_EAST_NODE2, X_EAST_NODE3
 ```
 
 3) Run installer:
@@ -128,3 +130,10 @@ In Prometheus UI, check:
 
 ### 8) Validate in Grafana
 Open dashboard: `YugabyteDB YSQL Overview`.
+
+### 9) Universe and node filters
+The dashboard now uses a `universe` label added in `prometheus.yml`.
+If you add a new universe, copy one of the scrape jobs and update:
+- `job_name`
+- `targets`
+- `relabel_configs.replacement`
