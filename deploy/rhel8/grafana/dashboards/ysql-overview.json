@@ -39,12 +39,12 @@
       {
         "name": "table",
         "type": "query",
-        "datasource": "YSQL",
+        "datasource": "Prometheus",
         "refresh": 1,
         "includeAll": true,
         "allValue": ".*",
         "multi": true,
-        "query": "SELECT tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog','information_schema') ORDER BY tablename;"
+        "query": "label_values(pg_stat_user_tables_seq_scan, relname)"
       },
       {
         "name": "user",
