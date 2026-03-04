@@ -1,0 +1,67 @@
+services:
+  yugabyte:
+    image: yugabytedb/yugabyte:2025.2.0.0-b131
+    container_name: yb
+    command:
+      - "bin/yugabyted"
+      - "start"
+      - "--base_dir=/home/yugabyte/yb_data"
+      - "--advertise_address=yb"
+      - "--insecure"
+      - "--ui=true"
+      - "--daemon=false"
+    ports:
+      - "5434:5433"
+      - "7001:7000"
+      - "9001:9000"
+    healthcheck:
+      test: ["CMD-SHELL", "/home/yugabyte/bin/ysqlsh -h yb -p 5433 -U yugabyte -d yugabyte -c 'SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: pg_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://yugabyte@yb:5433/yugabyte?sslmode=disable"
+      PG_EXPORTER_DISABLE_SETTINGS_METRICS: "true"
+      PG_EXPORTER_EXTEND_QUERY_PATH: "/etc/postgres_exporter/queries.yaml"
+    command:
+      - "--collector.database"
+      - "--collector.stat_statements"
+      - "--collector.stat_statements.include_query"
+    volumes:
+      - "./prometheus/queries.yaml:/etc/postgres_exporter/queries.yaml:ro"
+    ports:
+      - "9187:9187"
+    depends_on:
+      yugabyte:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prom
+    volumes:
+      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - yugabyte
+      - postgres_exporter
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - "./grafana/provisioning:/etc/grafana/provisioning"
+      - "./grafana/dashboards:/var/lib/grafana/dashboards"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus

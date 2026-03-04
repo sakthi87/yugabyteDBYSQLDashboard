@@ -1,0 +1,101 @@
+yb_statements_latency:
+  query: |
+    WITH buckets AS (
+      SELECT
+        s.queryid::text AS queryid,
+        d.datname AS datname,
+        u.usename AS usename,
+        upper(coalesce(op.op, 'OTHER')) AS op,
+        split_part(split_part(e.key, ',', 2), ')', 1)::double precision AS le,
+        e.value::bigint AS bucket_count
+      FROM pg_stat_statements s
+      LEFT JOIN pg_database d ON d.oid = s.dbid
+      LEFT JOIN pg_user u ON u.usesysid = s.userid
+      LEFT JOIN LATERAL (
+        SELECT substring(s.query from '^[[:space:]]*([A-Za-z]+)') AS op
+      ) op ON true
+      JOIN LATERAL jsonb_array_elements(s.yb_latency_histogram) elem ON true
+      JOIN LATERAL jsonb_each_text(elem) e ON true
+      WHERE s.yb_latency_histogram IS NOT NULL
+    ),
+    cum AS (
+      SELECT
+        queryid,
+        datname,
+        usename,
+        op,
+        le,
+        sum(bucket_count) OVER (PARTITION BY queryid, datname, usename, op ORDER BY le) AS le_count
+      FROM buckets
+    )
+    SELECT
+      queryid,
+      datname,
+      usename,
+      op,
+      le::text AS le,
+      le_count
+    FROM cum
+    UNION ALL
+    SELECT
+      queryid,
+      datname,
+      usename,
+      op,
+      '+Inf' AS le,
+      max(le_count) AS le_count
+    FROM cum
+    GROUP BY queryid, datname, usename, op;
+  metrics:
+    - queryid:
+        usage: "LABEL"
+        description: "Query ID"
+    - datname:
+        usage: "LABEL"
+        description: "Database name"
+    - usename:
+        usage: "LABEL"
+        description: "User name"
+    - op:
+        usage: "LABEL"
+        description: "SQL operation"
+    - le:
+        usage: "LABEL"
+        description: "Latency upper bound (ms)"
+    - le_count:
+        usage: "COUNTER"
+        description: "Cumulative count by latency bucket"
+
+yb_statements_op_exec:
+  query: |
+    SELECT
+      d.datname AS datname,
+      u.usename AS usename,
+      upper(coalesce(substring(s.query from '^[[:space:]]*([A-Za-z]+)'), 'OTHER')) AS op,
+      sum(s.total_exec_time) / nullif(sum(s.calls), 0) AS avg_exec_ms,
+      min(s.min_exec_time) AS min_exec_ms,
+      max(s.max_exec_time) AS max_exec_ms
+    FROM pg_stat_statements s
+    LEFT JOIN pg_database d ON d.oid = s.dbid
+    LEFT JOIN pg_user u ON u.usesysid = s.userid
+    WHERE s.query IS NOT NULL
+    GROUP BY 1, 2, 3;
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Database name"
+    - usename:
+        usage: "LABEL"
+        description: "User name"
+    - op:
+        usage: "LABEL"
+        description: "SQL operation"
+    - avg_exec_ms:
+        usage: "GAUGE"
+        description: "Average execution time in ms"
+    - min_exec_ms:
+        usage: "GAUGE"
+        description: "Minimum execution time in ms"
+    - max_exec_ms:
+        usage: "GAUGE"
+        description: "Maximum execution time in ms"

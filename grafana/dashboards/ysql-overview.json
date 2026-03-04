@@ -1,0 +1,365 @@
+{
+  "uid": "ysql-overview",
+  "title": "YugabyteDB YSQL Overview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "templating": {
+    "list": [
+      {
+        "name": "universe",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "query": "label_values(yb_statements_latency_le_count, server)"
+      },
+      {
+        "name": "node",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "query": "label_values(yb_statements_latency_le_count, server)"
+      },
+      {
+        "name": "database",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "query": "label_values(yb_statements_latency_le_count, datname)"
+      },
+      {
+        "name": "table",
+        "type": "query",
+        "datasource": "YSQL",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "query": "SELECT tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog','information_schema') ORDER BY tablename;"
+      },
+      {
+        "name": "user",
+        "type": "query",
+        "datasource": "Prometheus",
+        "refresh": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "query": "label_values(yb_statements_latency_le_count, usename)"
+      }
+    ]
+  },
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "YSQL Throughput (Universe)",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(pg_stat_statements_calls_total{datname=~\"$database\",user=~\"$user\"}[5m]))",
+          "legendFormat": "calls/sec"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "YSQL Latency (Universe) p50/p95/p99/avg",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "D",
+          "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "legendFormat": "p99"
+        },
+        {
+          "refId": "E",
+          "expr": "avg(yb_statements_op_exec_avg_exec_ms{server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})",
+          "legendFormat": "avg"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "YSQL Throughput (Node)",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 7 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(pg_stat_statements_calls_total{datname=~\"$database\",user=~\"$user\"}[5m]))",
+          "legendFormat": "calls/sec"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "YSQL Latency (Node) p50/p95/p99/avg",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 7 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "D",
+          "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=~\"SELECT|INSERT|UPDATE|DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))",
+          "legendFormat": "p99"
+        },
+        {
+          "refId": "E",
+          "expr": "avg(yb_statements_op_exec_avg_exec_ms{server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})",
+          "legendFormat": "avg"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "YSQL Throughput by SQL Type (SELECT/INSERT/UPDATE/DELETE)",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 14 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (op) (rate(pg_stat_statements_calls_total{datname=~\"$database\",user=~\"$user\"}[5m]) * on (queryid) group_left(op) label_replace(pg_stat_statements_query_id{query=~\"^[ \\\\t\\\\n]*([sS][eE][lL][eE][cC][tT]|[iI][nN][sS][eE][rR][tT]|[uU][pP][dD][aA][tT][eE]|[dD][eE][lL][eE][tT][eE]).*\"}, \"op\", \"$1\", \"query\", \"^[ \\\\t\\\\n]*([sS][eE][lL][eE][cC][tT]|[iI][nN][sS][eE][rR][tT]|[uU][pP][dD][aA][tT][eE]|[dD][eE][lL][eE][tT][eE]).*\"))",
+          "legendFormat": "{{op}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "YSQL SELECT Latency p50/p95/p99/avg",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 21 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"SELECT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "YSQL INSERT Latency p50/p95/p99/avg",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 21 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"INSERT\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "YSQL UPDATE Latency p50/p95/p99/avg",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 28 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"UPDATE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "YSQL DELETE Latency p50/p95/p99/avg",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 28 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "C", "expr": "histogram_quantile(0.95, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "D", "expr": "histogram_quantile(0.99, sum(rate(yb_statements_latency_le_count{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "refId": "E", "expr": "avg(yb_statements_op_exec_avg_exec_ms{op=\"DELETE\",server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})", "legendFormat": "avg" }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "Panel 4: Breakdown",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "bargauge",
+      "title": "Total Query Time by Database",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 36 },
+      "fieldConfig": {
+        "defaults": { "unit": "s" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (datname) (rate(pg_stat_statements_seconds_total{user=~\"$user\"}[5m]))",
+          "legendFormat": "{{datname}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "bargauge",
+      "title": "Total Query Time by User",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 45 },
+      "fieldConfig": {
+        "defaults": { "unit": "s" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (user) (rate(pg_stat_statements_seconds_total{datname=~\"$database\"}[5m]))",
+          "legendFormat": "{{user}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "bargauge",
+      "title": "Top Tables by Seq Scans/sec",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 54 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, rate(pg_stat_user_tables_seq_scan{relname=~\"$table\"}[5m]))",
+          "legendFormat": "{{relname}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Top Slow Queries",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 63 },
+      "fieldConfig": {
+        "defaults": { "unit": "ms" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, (rate(pg_stat_statements_seconds_total{datname=~\"$database\",user=~\"$user\"}[5m]) / rate(pg_stat_statements_calls_total{datname=~\"$database\",user=~\"$user\"}[5m])) * 1000) * on (queryid) group_left(query) pg_stat_statements_query_id",
+          "legendFormat": "queryid={{queryid}}"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "table",
+      "title": "Top Slow Queries (Table)",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 72 },
+      "fieldConfig": {
+        "defaults": { "unit": "none" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "queryid" },
+            "properties": [
+              { "id": "unit", "value": "none" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "query" },
+            "properties": [
+              { "id": "unit", "value": "none" }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(20, (rate(pg_stat_statements_seconds_total{datname=~\"$database\",user=~\"$user\"}[$__range]) / rate(pg_stat_statements_calls_total{datname=~\"$database\",user=~\"$user\"}[$__range])) * 1000) * on (queryid) group_left(query) pg_stat_statements_query_id",
+          "legendFormat": "",
+          "format": "table",
+          "instant": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+[Unit]
+Description=Postgres Exporter
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/yb/pg_exporter.env
+ExecStart=/usr/local/bin/postgres_exporter \
+  --collector.stat_statements \
+  --collector.stat_statements.include_query \
+  --collector.database
+Restart=always
+User=ybexporter
+Group=ybexporter
+
+[Install]
+WantedBy=multi-user.target

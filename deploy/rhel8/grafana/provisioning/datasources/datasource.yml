@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://PROM_HOST:9090
+    isDefault: true
+  - name: YSQL
+    type: postgres
+    access: proxy
+    url: NODE1:5433
+    user: yugabyte
+    jsonData:
+      database: "testdb"
+      sslmode: "disable"
