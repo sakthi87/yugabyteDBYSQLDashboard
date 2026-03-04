@@ -108,6 +108,11 @@
           "refId": "E",
           "expr": "avg(yb_statements_op_exec_avg_exec_ms{server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})",
           "legendFormat": "avg"
+        },
+        {
+          "refId": "F",
+          "expr": "avg(handler_latency_yb_tserver_PgClientService_Perform{quantile=\"mean\"}) * 0.001",
+          "legendFormat": "avg_yba"
         }
       ]
     },
@@ -159,6 +164,11 @@
           "refId": "E",
           "expr": "avg(yb_statements_op_exec_avg_exec_ms{server=~\"$universe\",datname=~\"$database\",usename=~\"$user\"})",
           "legendFormat": "avg"
+        },
+        {
+          "refId": "F",
+          "expr": "avg(handler_latency_yb_tserver_PgClientService_Perform{quantile=\"mean\"}) * 0.001",
+          "legendFormat": "avg_yba"
         }
       ]
     },
