@@ -137,3 +137,17 @@ If you add a new universe, copy one of the scrape jobs and update:
 - `job_name`
 - `targets`
 - `relabel_configs.replacement`
+
+### 10) Metrics reference (what each metric represents)
+
+| Metric | Source | How it’s extracted | What it means |
+|---|---|---|---|
+| `pg_stat_statements_calls_total` | `pg_stat_statements` | Exporter built-in stat_statements collector | Total executions per `queryid` (counter). |
+| `pg_stat_statements_seconds_total` | `pg_stat_statements` | Exporter built-in stat_statements collector | Total execution time per `queryid` in seconds (counter). |
+| `pg_stat_statements_query_id` | `pg_stat_statements` | Exporter built-in stat_statements collector | Maps `queryid` → query text (label). |
+| `yb_statements_latency_le_count` | `pg_stat_statements.yb_latency_histogram` | Custom `queries.yaml` converts JSON histogram to Prometheus buckets | Histogram buckets (ms) for latency; used for p50/p95/p99. |
+| `yb_statements_op_exec_avg_exec_ms` | `pg_stat_statements.mean_exec_time` | Custom `queries.yaml` | Avg exec time per SQL type (ms). |
+| `yb_statements_op_exec_min_exec_ms` | `pg_stat_statements.min_exec_time` | Custom `queries.yaml` | Min exec time per SQL type (ms). |
+| `yb_statements_op_exec_max_exec_ms` | `pg_stat_statements.max_exec_time` | Custom `queries.yaml` | Max exec time per SQL type (ms). |
+| `handler_latency_yb_tserver_PgClientService_Perform{quantile="mean"}` | TServer `/prometheus-metrics` | Native Yugabyte metrics | YBA-style avg latency (microseconds). |
+| `handler_latency_yb_tserver_PgClientService_Perform{quantile="p99"}` | TServer `/prometheus-metrics` | Native Yugabyte metrics | YBA-style p99 latency (microseconds). |

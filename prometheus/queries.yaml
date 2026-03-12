@@ -17,6 +17,8 @@ yb_statements_latency:
       JOIN LATERAL jsonb_array_elements(s.yb_latency_histogram) elem ON true
       JOIN LATERAL jsonb_each_text(elem) e ON true
       WHERE s.yb_latency_histogram IS NOT NULL
+        AND e.key ~ '^\\[[0-9.]+,[0-9.]+\\)$'
+        AND split_part(split_part(e.key, ',', 2), ')', 1) <> ''
     ),
     cum AS (
       SELECT
